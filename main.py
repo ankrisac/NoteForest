@@ -53,7 +53,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             http_fmt, read_fmt = ext_map[ext]
             self.respond(200, http_fmt)
 
-            data = open(f"res/{path}", read_fmt).read()
+            data = open(f"docs/{path}", read_fmt).read()
             self.wfile.write(data.encode() if read_fmt == "r" else data)
         except Exception as ex:
             print(f"-- EXCEPTION\n{ex}")
@@ -62,7 +62,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             CODE = 404
 
             self.respond(CODE, "text/html")
-            with open("res/other/errorpage.html") as file:
+            with open("docs/other/errorpage.html") as file:
                 self.wfile.write(
                     file.read()
                         .replace("{code}", f"{CODE}"))
