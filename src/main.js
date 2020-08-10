@@ -1,7 +1,7 @@
-import * as Graph from "/modules/graphnode.js";
-import { Vector } from "/modules/vector.js";
-import * as Util from "/modules/util.js";
-import * as Parser from "/modules/parser.js";
+import * as Graph from "./modules/graphnode.js";
+import { Vector } from "./modules/vector.js";
+import * as Util from "./modules/util.js";
+import * as Parser from "./modules/parser.js";
 
 let canvas = {
     display: document.getElementById("canvas-display"),
@@ -252,7 +252,9 @@ window.onkeydown = (event) => {
                 sendHttpRequest("POST", "$/data_save", 
                     viewer.save()
                 ).then(() => { console.log("SAVED!"); })
-                .catch(() => { console.log("ERROR!"); });
+                .catch(() => { 
+                    alert("Saving not supported!"); 
+                });
             }
             break;
         case "ShiftLeft": keyboard.shift = true; break;

@@ -53,7 +53,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             http_fmt, read_fmt = ext_map[ext]
             self.respond(200, http_fmt)
 
-            data = open(f"docs/{path}", read_fmt).read()
+            data = open(path, read_fmt).read()
             self.wfile.write(data.encode() if read_fmt == "r" else data)
         except Exception as ex:
             print(f"-- EXCEPTION\n{ex}")
@@ -62,7 +62,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             CODE = 404
 
             self.respond(CODE, "text/html")
-            with open("docs/other/errorpage.html") as file:
+            with open("src/other/errorpage.html") as file:
                 self.wfile.write(
                     file.read()
                         .replace("{code}", f"{CODE}"))
@@ -93,7 +93,7 @@ def run_server():
     with http.server.HTTPServer(("", PORT), RequestHandler) as httpd:
         try:
             print(f"-- Serving on PORT[{PORT}]")
-            webbrowser.open(f"localhost:{PORT}/index.html")
+            webbrowser.open(f"localhost:{PORT}")
             httpd.serve_forever()
         except KeyboardInterrupt:
             print("-- Stopping Server ...")
