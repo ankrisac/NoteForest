@@ -13,7 +13,7 @@
     --syntax-sep: #AAAAAA;
 
     --scrollbar-track: #2F2F2F;
-    --scrollbar-thumb: #202020;
+    --scrollbar-thumb: #282828;
 }
 
 html, body{
@@ -24,17 +24,37 @@ html, body{
     height: 100%;
 
     background: white;
+    font-family: 'Recursive', sans-serif;
 }
-
+html{
+    overflow: hidden;
+}
 body{
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-track) var(--scrollbar-thumb);
 }
-body::-webkit-scrollbar-track{
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+
     background: var(--scrollbar-track);
 }
-body::-webkit-scrollbar-thumb{
+::-webkit-scrollbar-button {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
+    border: 0px solid transparent;
+    border-radius: 0px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0px none transparent;
+    border-radius: 0px;
+}
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 #container{
@@ -94,7 +114,6 @@ body::-webkit-scrollbar-thumb{
     width: 100%;
     color: white;
 
-    font-family: 'Recursive', sans-serif;
     font-weight: thin;
     overflow: auto;
 
@@ -167,9 +186,11 @@ body::-webkit-scrollbar-thumb{
     left: 0;
 
     display: inline-block;
+    outline: 0px solid transparent;
 
     /* DO NOT TOUCH THIS, IT WILL BREAK THE EDITOR */
     white-space: pre; 
+
 }
 #editor_data{
     color: transparent;
@@ -210,4 +231,55 @@ body::-webkit-scrollbar-thumb{
 .editor_ln_sep{
     color: var(--syntax-sep);
     display: inline;
+}
+
+#graph_tooltip{
+    font-family: 'Source Code Pro', monospace;
+    font-weight: thin;
+    font-size: 100%;
+
+    position: absolute;
+
+    padding: 5px;
+
+    color: white;
+    background: var(--bg-color);
+    box-shadow: 0px 0px 2px 2px var(--bg-color-shadow);
+}
+#graph_tooltip.hidden{
+    display: none;
+}
+
+#graph_contextmenu{
+    font-family: 'Source Code Pro', monospace;
+    font-weight: thin;
+    font-size: 100%;
+
+    position: absolute;
+
+    padding: 0px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+#graph_contextmenu.hidden{
+    display: none;
+}
+#graph_contextmenu.view{
+    color: white;
+    background: var(--bg-color);
+    box-shadow: 0px 0px 2px 2px var(--bg-color-shadow);
+}
+
+#graph_contextmenu > .button{
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#graph_contextmenu > .button.enabled{
+    background: var(--bg-color);
+}
+#graph_contextmenu > .button.enabled:hover{
+    background: var(--bg-color-shadow);
+}
+#graph_contextmenu > .button.disabled{
+    color: #666666;
 }

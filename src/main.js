@@ -1,214 +1,106 @@
-import * as Graph from "./modules/graphnode.js";
+
 import { Vector } from "./modules/vector.js";
 import * as Util from "./modules/util.js";
 import * as Parser from "./modules/parser.js";
+import * as Graph from "./modules/graph/core.js";
+import { $ } from "./modules/DOM.js"
+import * as XHR from "./modules/xhttp.js";
 
 let canvas = {
-    display: document.getElementById("canvas-display"),
-    pointer: document.getElementById("canvas-pointer")
+    display: $("#canvas-display"),
+    pointer: $("#canvas-pointer")
 };
 let context = {
     display: canvas.display.getContext("2d"),
     pointer: canvas.pointer.getContext("2d")
 };
+let graph = {
+    tooltip: $("#graph_tooltip"),
+    contextmenu: $("#graph_contextmenu"),
+};
+let node, renderer, graph_vistor;
 
+const State = {
+    change: true,
+    saved: true,
 
-class Viewer{
-    constructor(node, renderer){
-        this.graph_vistor = new Graph.Vistor(node, renderer);
+    keyboard: {
+        shift: false,
+        ctrl: false
+    },
+    mouse_state: { 
+        pos: new Vector(0, 0) 
+    },
 
-        this.view = {
-            view: document.getElementById("viewer"),
-            out: document.getElementById("output"),
-            inp: document.getElementById("editor")
-        };
-        this.output = {
-            title: document.getElementById("output_title"),
-            data: document.getElementById("output_display")
-        }
-        this.input = {
-            syntax: document.getElementById("editor_syntax"),
-            data: document.getElementById("editor_data")
-        };
-        this.input.data.oninput = () => { 
-            this.graph_vistor.node.data.data = this.input.data.innerText;
-            this.update_viewer();
-        };
+    scale: 1,
+    edit: false,
+    view: false,
+};
 
-        this.view.inp.onkeydown = (event) => {
-            if(event.code == "Tab"){
-                event.preventDefault();
-                document.execCommand("insertText", false, '  ');
-                this.selectionStart = this.selectionEnd + 1
-            }
-        }
+let view = {
+    view: $("#viewer"),
+    out: $("#output"),
+    inp: $("#editor")
+};
+let output = {
+    title: $("#output_title"),
+    data: $("#output_display")
+}
+let input = {
+    syntax: $("#editor_syntax"),
+    data: $("#editor_data")
+};
 
-        this.__reset()
-    }
+const input_update = () => {
+    graph_vistor.node.data.data = input.data.innerText;
+    update_viewer();
+}
+input.data.oninput = input_update;
+input.data.onkeydown = event => {
+    if(event.code === "Tab"){
+        event.preventDefault();
 
-    save(){
-        return this.graph_vistor.save();
-    }
-    __reset(){
-        this.mode = { 
-            edit: false, 
-            view: false 
-        };
-        this.scale = 1;
-
-        this.sync_data();
-        this.update_viewer();
-    }
-    load(node){
-        this.graph_vistor.load(node);
-        this.__reset()
-    }
-
-    sync_data(){
-        this.input.data.innerText = this.graph_vistor.node.data.data;
-    }
-    update_viewer(){
-        let text = this.input.data.innerText;
-        let doc = Parser.eval_doc(text);
-
-        this.graph_vistor.node.data.title = doc.title;
-        this.graph_vistor.node.data.thumbnail = (doc.thumbnail.length > 0) ? doc.thumbnail : "?";
-
-        this.output.title.innerText = (doc.title.length > 0) ? doc.title : "Untitled Doc";
-        this.output.data.innerHTML = doc.data;
-        this.input.syntax.innerHTML = Parser.highlight(text);
-    }
-
-    __class_swap(elem, before, after, swap){
-        if(swap){
-            [after, before] = [before, after];
-        }
-        elem.classList.remove(before);
-        elem.classList.add(after);
-    }
-
-    toggle_edit(){
-        for(let tag in this.view){
-            this.__class_swap(this.view[tag], "view", "edit", this.mode.edit);
-        }
-        this.mode.edit = !this.mode.edit;
-    }
-    toggle_view(){
-        this.__class_swap(this.view.view, "min", "shown", this.mode.view);
-        this.mode.view = !this.mode.view;
-    }
-
-    update_action(){
-        this.sync_data();
-        this.update_viewer();       
-    }
-    action_rot(n, lock){
-        if(lock && this.mode.edit){ 
-            this.graph_vistor.swap_pointer(n); 
-        }
-        else{ 
-            this.graph_vistor.move_pointer(n);
-            this.update_action();
-        }
-    }
-    action_up(lock){
-        if(lock && this.mode.edit){ 
-            this.graph_vistor.change_length(+1); 
-        }
-        else{ 
-            this.graph_vistor.goto_child();
-            this.update_action();
-        }
-    }
-    action_down(lock){
-        if(lock && this.mode.edit){ 
-            this.graph_vistor.change_length(-1);
-        }
-        else{ 
-            this.graph_vistor.goto_parent();
-            this.update_action();
-        }
-    }
-
-    draw(pos, R, mouse_state){
-        this.graph_vistor.draw(pos, R * this.scale, mouse_state);
-    }
-
-    action_plus(lock){
-        if(this.mode.edit && lock){ this.graph_vistor.add_child(); }
-        else{ this.scale *= 1.025; }
-    }
-    action_minus(lock){
-        if(this.mode.edit && lock){ this.graph_vistor.remove_child(); }
-        else{ this.scale /= 1.025; }
-    }
-
-    select(lock){
-        if(this.mode.edit && lock){
-
-        }
-        else{
-            this.graph_vistor.goto_select();
-            this.update_action();
-        }
+        let range = document.getSelection().getRangeAt(0);
+        
+        let node = $.newText("  ");
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.setEndAfter(node);
+    
+        input_update();
     }
 }
 
+const sync_data = () => {
+    input.data.innerText = graph_vistor.node.data.data;
+};
+const update_viewer = () => {
+    let text = input.data.innerText;
+    let doc = Parser.eval_doc(text);
 
-const sendHttpRequest = (method, url, data) => {
-    return new Promise(
-        (resolve, reject) => {
-            const xhr = new XMLHttpRequest();
+    graph_vistor.node.data.title = doc.title;
+    graph_vistor.node.data.thumbnail = 
+        (doc.thumbnail.length > 0) ? doc.thumbnail : "?";
 
-            xhr.open(method, url);
-            xhr.responseType = "json";
-
-            if(data){
-                xhr.setRequestHeader("Content-Type", "application/json");
-            }
-
-            xhr.onload = () => { 
-                if(xhr.status >= 400){
-                    reject("Load failed");
-                }
-                else{
-                    resolve(xhr.response); 
-                }
-            };
-            xhr.onerror = () => { reject("Something went wrong!"); };
-            xhr.send(JSON.stringify(data));
-        }
-    );
-}
-
-let renderer = new Graph.Renderer(context.display, context.pointer);
-let viewer;
-
-sendHttpRequest("GET", "$/data_load").then(
-    data => { 
-        console.log("Loading graph!");
-        console.log("RENDERER", renderer);
-        viewer = new Viewer(Graph.Node.json_decode(data), renderer);    
-    }
-).catch(
-    err => {
-        console.log("Creating new graph!", err);
-        viewer = new Viewer(new Graph.Node(), renderer);    
-    }
-);
-
-const keyboard = {
-    shift: false,
-    ctrl: false
+    output.title.innerText = 
+        (doc.title.length > 0) ? doc.title : "Untitled Doc";
+    output.data.innerHTML = doc.data;
+    input.syntax.innerHTML = Parser.highlight(text);
+};
+const sync_viewer = () =>{
+    sync_data();
+    update_viewer();       
 };
 
-let mouse_state = { 
-    pos: new Vector(0, 0) 
+const class_swap = (elem, before, after, swap) => {
+    if(swap){
+        [after, before] = [before, after];
+    }
+    elem.classList.remove(before);
+    elem.classList.add(after);
 };
 
-let change = true;
 let width, height;
-
 window.onresize = (() => {
     const resize = () => {
         let dpr = 1; //window.devicePixelRatio || 1;
@@ -224,90 +116,179 @@ window.onresize = (() => {
         canvas.display.width = width * pdpr;
         canvas.display.height = height * pdpr;
         context.display.setTransform(pdpr, 0, 0, pdpr, 0, 0);
-        change = true;
+        State.change = true;
     }
     resize();
     return resize;
 })();
-window.onclick = (event) => {
-    viewer.select(keyboard.shift);
-    change = true;
+
+window.onclick = _ => {
+    State.change = true;
+
+    if(graph.contextmenu.classList.contains("view")){
+        graph.contextmenu.className = "";
+        graph.contextmenu.classList.add("hidden");    
+    }
+    else{
+        if(State.edit && State.keyboard.shift){
+            if(graph_vistor.add_link()){
+                sync_viewer();
+            }
+        }
+        else if(graph_vistor.goto_select()){
+            sync_viewer();
+        }
+    }
 }
-window.onmousemove = (event) => {
-    change = true;
-    mouse_state = { 
+window.oncontextmenu = event => {
+    State.change = true;
+    event.preventDefault();
+    graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
+}
+window.onmousemove = event => {
+    State.change = true;
+    State.mouse_state = { 
         pos: new Vector(event.clientX, event.clientY) 
     };
 };
 window.onkeyup = (event) => {
     switch(event.code){
-        case "ShiftLeft": keyboard.shift = false; break;
+        case "ShiftLeft": State.keyboard.shift = false; break;
     }  
 };
-window.onkeydown = (event) => {
-    change = true;
+window.onkeydown = event => {
+    let C = true;
     switch(event.code){        
         case "KeyS":
-            if(keyboard.shift){
-                sendHttpRequest("POST", "$/data_save", 
-                    viewer.save()
+            if(State.keyboard.shift){
+                XHR.request("POST", "$/data_save", 
+                    graph_vistor.save()
                 ).then(() => { console.log("SAVED!"); })
                 .catch(() => { 
                     alert("Saving not supported!"); 
                 });
+                State.saved = true;
             }
             break;
-        case "ShiftLeft": keyboard.shift = true; break;
-        default: change = false; break;
+        case "ShiftLeft": State.keyboard.shift = true; break;
+        default: C = false; break;
     }  
-};
-canvas.display.onkeydown = (event) => {
-    change = true;
-    switch(event.code){
-        case "KeyV": viewer.toggle_view(); break;
-        case "KeyE": viewer.toggle_edit(); break;
-
-        case "ArrowLeft":   viewer.action_rot(-1, keyboard.shift); break;
-        case "ArrowRight":  viewer.action_rot(+1, keyboard.shift); break;
-
-        case "ArrowUp":     viewer.action_up(keyboard.shift);     break;
-        case "ArrowDown":   viewer.action_down(keyboard.shift);   break;
-        
-        case "Equal": viewer.action_plus(keyboard.shift);   break;
-        case "Minus": viewer.action_minus(keyboard.shift);  break;
-        default: change = false; break;
-    }    
+    State.change = C || State.change;
 };
 
-function draw(){
-    let pos = new Vector(width * 0.5, height * 0.5);
-    let R = Math.min(width, height) * 0.5;
-
-    if(viewer != null){
-        viewer.draw(pos, R * 0.08, mouse_state);
+const toggle_edit = () => {
+    for(let tag in view){
+        class_swap(view[tag], "view", "edit", State.edit);
     }
-}
+    State.edit = !State.edit;
+};
+const toggle_view = () => {
+    class_swap(view.view, "min", "shown", State.view);
+    State.view = !State.view;
+};
+const action_rot = (n, lock) => { 
+    if(State.keyboard.shift  && State.edit){ 
+        graph_vistor.swap_pointer(n); 
+    }
+    else{ 
+        graph_vistor.move_pointer(n);
+        sync_viewer();
+    }
+};
+canvas.display.onkeydown = event => {
+    let C = true;
+    switch(event.code){
+        case "KeyV": toggle_view(); break;
+        case "KeyE": toggle_edit(); break;
 
-let t = 0;
-function update(){
-    context.display.fillStyle = Util.rgba(50);
-    context.display.fillRect(0, 0, width, height);
+        case "ArrowLeft":   action_rot(-1); break;
+        case "ArrowRight":  action_rot(+1); break;
 
-    context.pointer.fillStyle = Util.rgba(0);
-    context.pointer.fillRect(0, 0, width, height);
+        case "ArrowUp":     
+            if(State.keyboard.shift  && State.keyboard.shift){ 
+                graph_vistor.change_length(+1); 
+            }
+            else{ 
+                graph_vistor.goto_child();
+                sync_viewer();
+            }
+            break;
+        case "ArrowDown":   
+            if(State.keyboard.shift && State.edit){ 
+                graph_vistor.change_length(-1);
+            }
+            else{ 
+                graph_vistor.goto_parent();
+                sync_viewer();
+            }
+            break;
+        
+        case "Equal": 
+            if(State.edit && State.keyboard.shift){ 
+                graph_vistor.add_child(); 
+            }
+            else{ 
+                State.scale *= 1.025; 
+            }
+            break;
+            
+        case "Minus": 
+            if(State.edit && State.keyboard.shift){ 
+                graph_vistor.remove_child(); 
+            }
+            else{ 
+                State.scale /= 1.025; 
+            }
+            break;
+        default: C = false; break;
+    }    
+    State.change = C || State.change;
+};
 
-    context.display.textBaseline = "middle";
-    context.display.textAlign = "center";
+const main_loop = () => {
+    if(State.change){
+        context.display.fillStyle = Util.rgba(50);
+        context.display.fillRect(0, 0, width, height);
+    
+        context.pointer.fillStyle = Util.rgba(0);
+        context.pointer.fillRect(0, 0, width, height);
+    
+        context.display.textBaseline = "middle";
+        context.display.textAlign = "center";
+    
+        let pos = new Vector(width * 0.5, height * 0.5);
+        let R = Math.min(width, height) * 0.5;
+    
+        if(viewer != null){
+            graph_vistor
+                .draw(pos, State.scale * R * 0.08)
+                .touch(State.mouse_state)
+                .draw_tooltip(graph.tooltip, graph.contextmenu);
+        }
 
-    draw();    
-}
-
-function main_loop(){
-    if(change){
-        update();
-        change = false;
+        State.change = false;
     }
 
     window.requestAnimationFrame(main_loop);
 }
-main_loop();
+
+const init = () => {
+    renderer = new Graph.Renderer(context.display, context.pointer);
+    graph_vistor = new Graph.Vistor(node, renderer);
+
+    sync_viewer();
+    main_loop();    
+}
+
+XHR.request("GET", "$/data_load").then(
+    data => { 
+        node = Graph.Node.json_decode(data);
+        init();
+    }
+).catch(
+    err => {
+        console.log("Creating new graph!", err);
+        node = new Graph.Node();     
+        init();
+    }
+);

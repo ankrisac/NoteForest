@@ -2,6 +2,9 @@ import http.server
 import webbrowser
 import os
 
+SAVE = {
+    "file": "tutorial"
+}
 class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def respond(self, code, fmt):
         self.send_response(code)
@@ -10,7 +13,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
     
     def load_file(self, file_name):
         try:
-            with open(f"data/{file_name}.json", "rb") as file:
+            with open(f".data/{file_name}.json", "rb") as file:
                 data = file.read()
         except FileNotFoundError:
             print(f"-- Create new Graph! '{file_name}'")
@@ -25,7 +28,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         self.respond(200, "text/html")
 
         print(f"-- Saving Graph '{file_name}'")
-        with open(f"data/{file_name}.json", "wb") as file:
+        with open(f".data/{file_name}.json", "wb") as file:
             file.write(data)
 
     
@@ -48,6 +51,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
             _, ext = os.path.splitext(path)
 
             if ext not in ext_map:
+                print(f"-- Unknown file type [{ext}]")
                 raise Exception("Unknown file type")
 
             http_fmt, read_fmt = ext_map[ext]
@@ -71,7 +75,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == "/":
             self.load_resource("index.html")
         elif self.path.startswith("/$/data_load"):
-            self.load_file("tutorial")
+            self.load_file(SAVE["file"])
         else:
             self.load_resource(self.path[1:])
             
@@ -79,7 +83,7 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path.startswith("/$/data_save"):
             print("-- Saving File!")
-            self.save_file("tutorial")
+            self.save_file(SAVE["file"])
         else:
             self.respond(404, "text/html")
         
@@ -102,14 +106,26 @@ def main():
     run_server()
 
     while True:            
-        cmd = input("> ").lower().strip()
+        cmd_lst = input("> ").lower().strip().split()
         
-        if cmd in ["quit", "exit"]:
-            break
-        elif cmd == "restart":
-            run_server()
+        if len(cmd_lst) == 1:
+            cmd = cmd_lst[0]
+            if cmd in ["quit", "exit"]:
+                break
+            elif cmd == "restart":
+                run_server()
+            else:
+                print(f"{cmd} is not defined")
+        elif len(cmd_lst) == 2:
+            cmd, A = cmd_lst
+
+            if cmd == "load":
+                SAVE["file"] = A
+                run_server()
+            else:
+                print(f"{cmd} with 1 arg not defined!")
         else:
-            print(f"{cmd} is not defined")
+            print("Too many args")
 
         
 

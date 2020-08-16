@@ -6,28 +6,34 @@ class Vector{
         this.y = y;
     }
 
-    distSq(other){
-        return Math.pow(this.x - other.y, 2) + Math.pow(this.y - other.y, 2);
-    }
-    dist(other){
-        return Math.sqrt(this.distSq(other));
-    }
-    
-    add(other){
-        this.x += other.x;
-        this.y += other.y;
-        return this;
-    }
+    dot(other){ return this.x * other.x + this.y * other.y; }
+    magSq(){ return this.dot(this); }
+    mag(){ return Math.sqrt(this.magSq()); }
+
+    distSq(other){ return this.copy().sub(other).magSq(); }
+    dist(other){ return this.copy().sub(other).mag(); }
+
     add_mul(other, val){
         this.x += val * other.x;
         this.y += val * other.y;
         return this;
     }
-    copy(){
-        return new Vector(this.x, this.y);
+    add(other){ return this.add_mul(other, 1); }
+    sub(other){ return this.add_mul(other, -1); }
+    scl(val){
+        this.x *= val;
+        this.y *= val;
+        return this;
     }
-    map(fn){
-        return new Vector(fn(this.x), fn(this.y));
+    copy(){ return new Vector(this.x, this.y); }
+    map(fn){ return new Vector(fn(this.x), fn(this.y)); }
+
+    unit(){ return this.copy().scl(1/this.mag()); }
+    mul(other){
+        return new Vector(
+            this.x * other.x - this.y * other.y,
+            this.x * other.y + this.y * other.x
+        );
     }
 };
 
@@ -48,8 +54,12 @@ class Renderer{
         this.ctx.fillStyle = color;
         return this;
     }
+    line_dash(segments){
+        this.ctx.setLineDash(segments);
+        return this;
+    }
 
-    font(font, R){
+    font(R, font){
         this.ctx.font = `${R}px ${font}`;
         return this;
     }
@@ -65,6 +75,19 @@ class Renderer{
         this.ctx.moveTo(A.x, A.y);
         this.ctx.lineTo(B.x, B.y);
         this.ctx.stroke();
+        return this;
+    }
+    line_taper(A, B, w){
+        let U = A.copy().sub(B).unit().mul(new Vector(0, w));
+        let k = 2;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(A.x - k * U.x, A.y - k * U.y);
+        this.ctx.lineTo(A.x + k * U.x, A.y + k * U.y);
+        this.ctx.lineTo(B.x + U.x / k, B.y + U.y / k);
+        this.ctx.lineTo(B.x - U.x / k, B.y - U.y / k);
+        this.ctx.closePath();
+        this.ctx.fill();
         return this;
     }
     disc(P, R, solid = true){
@@ -92,5 +115,5 @@ function make(x, y){
 function fromPolar(angle, R = 1) {
     return new Vector(R * Math.cos(angle), R * Math.sin(angle));
 }
-export { Vector, Renderer, fromPolar, make};
 
+export { Vector, Renderer, fromPolar, make};
