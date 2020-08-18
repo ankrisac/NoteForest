@@ -1,6 +1,3 @@
-import * as Util from "../util.js"
-import * as Vector from "../vector.js";
-
 class ColorID_Generator{
     constructor(N){
         this.part = [0,0,0];
@@ -31,7 +28,7 @@ class Renderer{
         this.pctx = new Vector.Renderer(pointer_context);
         
         this.encode = {
-            gen: new ColorID_Generator(8),
+            gen: new ColorID_Generator(16),
             val: {}
         };
     }

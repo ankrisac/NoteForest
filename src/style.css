@@ -1,7 +1,10 @@
 :root {
     --bg-color: #333333;
     --bg-color-shadow: #222222;
+    
+    --bg-color-semiopaq-dark: #333333F8;
     --bg-color-semiopaq: #333333F0;
+    
     --bg-selection: #282828AA;
 
     --transition-speed: 0.1s;
@@ -12,8 +15,8 @@
     --syntax-head-undef: #EE8800;
     --syntax-sep: #AAAAAA;
 
-    --scrollbar-track: #2F2F2F;
-    --scrollbar-thumb: #282828;
+    --scrollbar-track: #282828;
+    --scrollbar-thumb: #2F2F2F;
 }
 
 html, body{
@@ -23,7 +26,7 @@ html, body{
     width: 100%;
     height: 100%;
 
-    background: white;
+    background: --bg-color;
     font-family: 'Recursive', sans-serif;
 }
 html{
@@ -83,8 +86,6 @@ body{
 
 #viewer{
     margin: 20px;
-    border-radius: 10px;
-
     background: transparent;
     color: transparent;
 
@@ -99,12 +100,12 @@ body{
     pointer-events: none;
 }
 #viewer.shown{ height: 90%; }
-#viewer.view{ width: min(45%, 450px); }
-#viewer.edit{ width: min(90%, 900px); }
+#viewer.view{ width: min(45%, 800px); }
+#viewer.edit{ width: min(90%, 1600px); }
 
 #output, #editor{
     overflow: auto;
-    box-shadow: 0px 5px 5px 5px var(--bg-color-shadow);    
+    box-shadow: 0px 2px 2px 2px var(--bg-color-shadow);    
 
     background: transparent;
     color: transparent;
@@ -117,17 +118,7 @@ body{
     font-weight: thin;
     overflow: auto;
 
-    transition: var(--transition-speed);
-}
-#output.view{
-    border-radius: 0px var(--elem-radius) 0px var(--elem-radius);
-}
-#output.edit{
-    border-bottom-left-radius: var(--elem-radius);
-}
-#output:hover{
-    transition: var(--transition-speed);
-    background: var(--bg-color-semiopaq);
+    background: var(--bg-color-semiopaq-dark);
 }
 
 #output_title{
@@ -148,13 +139,13 @@ body{
 
 #editor{
     border-top-right-radius: var(--elem-radius);
-    box-shadow: inset 0px 0px 5px 2px var(--bg-color-shadow);
+    box-shadow: inset 0px 0px 2px 2px var(--bg-color-shadow);
 
     font-family: 'Source Code Pro', monospace;
     font-weight: thin;
 
     position: relative;
-    transition: var(--transition-speed);
+    background: var(--bg-color-semiopaq);
 }
 #editor.view{
     width: 0%;
@@ -164,10 +155,6 @@ body{
     color: white;
     padding: 20px;
     width: 100%;
-}
-#editor:hover{
-    transition: var(--transition-speed);
-    background: var(--bg-color-semiopaq);
 }
 #editor.view::transition{
     background: transparent;

@@ -1,10 +1,6 @@
+import * as Graph from "./graph/core.js";
 
-import { Vector } from "./modules/vector.js";
-import * as Util from "./modules/util.js";
-import * as Parser from "./modules/parser.js";
-import * as Graph from "./modules/graph/core.js";
-import { $ } from "./modules/DOM.js"
-import * as XHR from "./modules/xhttp.js";
+document.execCommand("defaultParagraphSeparator", false, "br");
 
 let canvas = {
     display: $("#canvas-display"),
@@ -29,7 +25,7 @@ const State = {
         ctrl: false
     },
     mouse_state: { 
-        pos: new Vector(0, 0) 
+        pos: Vector.make(0, 0) 
     },
 
     scale: 1,
@@ -74,10 +70,14 @@ input.data.onkeydown = event => {
 const sync_data = () => {
     input.data.innerText = graph_vistor.node.data.data;
 };
+
+if(!window.Worker){
+    alert("This applet requires the Web Workers API, Please use a modern browser such as Chrome or Firefox");
+}
+
 const update_viewer = () => {
     let text = input.data.innerText;
     let doc = Parser.eval_doc(text);
-
     graph_vistor.node.data.title = doc.title;
     graph_vistor.node.data.thumbnail = 
         (doc.thumbnail.length > 0) ? doc.thumbnail : "?";
@@ -85,7 +85,9 @@ const update_viewer = () => {
     output.title.innerText = 
         (doc.title.length > 0) ? doc.title : "Untitled Doc";
     output.data.innerHTML = doc.data;
-    input.syntax.innerHTML = Parser.highlight(text);
+
+    input.syntax.innerHTML = Parser.highlight(text);    
+
 };
 const sync_viewer = () =>{
     sync_data();
@@ -122,35 +124,6 @@ window.onresize = (() => {
     return resize;
 })();
 
-window.onclick = _ => {
-    State.change = true;
-
-    if(graph.contextmenu.classList.contains("view")){
-        graph.contextmenu.className = "";
-        graph.contextmenu.classList.add("hidden");    
-    }
-    else{
-        if(State.edit && State.keyboard.shift){
-            if(graph_vistor.add_link()){
-                sync_viewer();
-            }
-        }
-        else if(graph_vistor.goto_select()){
-            sync_viewer();
-        }
-    }
-}
-window.oncontextmenu = event => {
-    State.change = true;
-    event.preventDefault();
-    graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
-}
-window.onmousemove = event => {
-    State.change = true;
-    State.mouse_state = { 
-        pos: new Vector(event.clientX, event.clientY) 
-    };
-};
 window.onkeyup = (event) => {
     switch(event.code){
         case "ShiftLeft": State.keyboard.shift = false; break;
@@ -174,6 +147,31 @@ window.onkeydown = event => {
         default: C = false; break;
     }  
     State.change = C || State.change;
+};
+
+window.onclick = _ => {
+    State.change = true;
+
+    if(graph.contextmenu.classList.contains("view")){
+        graph.contextmenu.className = "";
+        graph.contextmenu.classList.add("hidden");    
+    }
+    else if(document.activeElement == canvas){
+        if(graph_vistor.goto_select()){
+            sync_viewer();
+        }
+    }
+}
+window.oncontextmenu = event => {
+    State.change = true;
+    event.preventDefault();
+    graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
+}
+window.onmousemove = event => {
+    State.change = true;
+    State.mouse_state = { 
+        pos: Vector.make(event.clientX, event.clientY) 
+    };
 };
 
 const toggle_edit = () => {
@@ -205,7 +203,7 @@ canvas.display.onkeydown = event => {
         case "ArrowRight":  action_rot(+1); break;
 
         case "ArrowUp":     
-            if(State.keyboard.shift  && State.keyboard.shift){ 
+            if(State.keyboard.shift && State.edit){ 
                 graph_vistor.change_length(+1); 
             }
             else{ 
@@ -256,14 +254,18 @@ const main_loop = () => {
         context.display.textBaseline = "middle";
         context.display.textAlign = "center";
     
-        let pos = new Vector(width * 0.5, height * 0.5);
+        let pos = Vector.make(width * 0.5, height * 0.5);
         let R = Math.min(width, height) * 0.5;
     
         if(viewer != null){
             graph_vistor
                 .draw(pos, State.scale * R * 0.08)
                 .touch(State.mouse_state)
-                .draw_tooltip(graph.tooltip, graph.contextmenu);
+            
+            if(document.activeElement === canvas){
+                graph_vistor
+                    .draw_tooltip(graph.tooltip, graph.contextmenu);
+            }
         }
 
         State.change = false;

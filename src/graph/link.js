@@ -1,7 +1,3 @@
-import * as Util from "../util.js"
-import * as Vector from "../vector.js";
-import { $ } from "../DOM.js"
-
 class AbstractLink{
     constructor(parent, child, taper = 0.05){
         this.parent = parent;
@@ -10,7 +6,7 @@ class AbstractLink{
     }
 
     getVec(O, scale){
-        return O.copy().add_mul(this.R.vec, 4 * this.len * scale); 
+        return O.cadd_mul(4 * this.len * scale, this.R.vec); 
     }
 
     gfig_dim(){

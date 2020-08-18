@@ -14,5 +14,3 @@ const $ = selector => {
 $.newText = text => document.createTextNode(text);
 $.newElem = name => document.createElement(name);
 $.newAttr = attr => document.createAttribute(attr);
-
-export { $ };

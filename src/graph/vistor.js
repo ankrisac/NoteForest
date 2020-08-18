@@ -1,4 +1,3 @@
-import * as Util from "../util.js"
 import * as Node from "./node.js";
 
 class Vistor{
@@ -108,6 +107,9 @@ class Vistor{
         }
     }
 
+    count(){
+        return this.node.get_root().num_child();
+    }
     draw(P, scale){
         this.renderer
             .font(scale, "Courier New")
@@ -119,6 +121,7 @@ class Vistor{
             .gfig_draw_links(this.renderer)
             .gfig_draw_nodes(this.renderer)
             .gfig_draw_root(this.renderer);
+    
         return this;
     }
     touch(mouse_state){

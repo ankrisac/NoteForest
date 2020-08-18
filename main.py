@@ -39,8 +39,8 @@ class RequestHandler(http.server.SimpleHTTPRequestHandler):
                 ".html": ("text/html", "r"),
                 ".css": ("text/css", "r"),
                 
-                ".js": ("application/javascript", "r"),
-                ".mjs": ("application/javascript", "r"),
+                ".js": ("text/javascript", "r"),
+                ".mjs": ("text/javascript", "r"),
                 ".json": ("application/json", "r"),
 
                 ".ttf": ("font/ttf", "rb"),

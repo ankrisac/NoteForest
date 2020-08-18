@@ -1,6 +1,4 @@
-import * as Util from "../util.js"
 import * as Link from "./link.js"
-import { $ } from "../DOM.js";
 
 class Doc{
     static Tags = { 
@@ -63,6 +61,13 @@ class Node{
         };
     }
 
+    num_child(){
+        let S = 0;
+        for(let link of this.links.major){
+            S += link.child.num_child();
+        }
+        return S + 1;
+    }
 
     has_parent(){
         return (this.links.major_parent != null 
