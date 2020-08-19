@@ -7,9 +7,9 @@ class Doc{
         DATA: "data" 
     };
 
-    constructor(data = ""){
-        this.thumbnail = "";
-        this.title = "";
+    constructor(data = "", title = "", thumbnail = ""){
+        this.title = title;
+        this.thumbnail = thumbnail;
         this.data = data;
     }
 
@@ -18,11 +18,13 @@ class Doc{
     }
     json_encode(){
         return { 
+            title: this.title,
+            thumbnail: this.thumbnail,
             data: this.data
         }; 
     }
     static json_decode(data){
-        return new Doc(data.data);
+        return new Doc(data.data, data.tile, data.thumbnail);
     }
 }
 
@@ -321,14 +323,17 @@ class Node{
         }
     }
 
-    draw_tooltip(menu){        
+    draw_tooltip(tooltip){        
         let [P, R] = this.gfig_dim();
 
         if(this.data.title.length > 0){
-            menu.innerHTML = this.data.title;  
-            menu.classList.add("view");
-            menu.style.top = `${P.y + R}px`;
-            menu.style.left = `${P.x}px`;     
+            tooltip.innerHTML = this.data.title;  
+            tooltip.classList.add("view");
+            tooltip.style.top = `${P.y + R}px`;
+            tooltip.style.left = `${P.x}px`;     
+        }
+        else{
+            tooltip.classList.add("hidden");
         }
     }
     contextmenu(vistor, P, menu){

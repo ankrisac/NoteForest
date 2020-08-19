@@ -18,7 +18,6 @@ let node, renderer, graph_vistor;
 
 const State = {
     change: true,
-    saved: true,
 
     keyboard: {
         shift: false,
@@ -33,21 +32,24 @@ const State = {
     view: false,
 };
 
-let view = {
+const view = {
     view: $("#viewer"),
     out: $("#output"),
     inp: $("#editor")
 };
-let output = {
+const output = {
     title: $("#output_title"),
     data: $("#output_display")
 }
-let input = {
+const input = {
     syntax: $("#editor_syntax"),
     data: $("#editor_data")
 };
 
 const input_update = () => {
+    graph_vistor.edited = true;
+    DocWorker.updated = false;
+    
     graph_vistor.node.data.data = input.data.innerText;
     update_viewer();
 }
@@ -75,21 +77,46 @@ if(!window.Worker){
     alert("This applet requires the Web Workers API, Please use a modern browser such as Chrome or Firefox");
 }
 
+const DocWorker = {
+    delay: 0,
+    updated: false,
+    availabe: false,
+};
+DocWorker.make = () => {
+    DocWorker.worker = new Worker("src/doc/worker.js");
+    DocWorker.available = true;
+
+    DocWorker.worker.onmessage = event => {
+        let doc = event.data;
+        graph_vistor.node.data.title = doc.title;
+        graph_vistor.node.data.thumbnail = doc.thumbnail;
+
+        output.title.innerText = 
+            (doc.title.length > 0) ? doc.title : "Untitled Doc";
+        output.data.innerHTML = doc.data;
+        DocWorker.available = true;
+        DocWorker.delay = 500;
+    }
+}
+DocWorker.update_output = () => {
+    if(DocWorker.available && !DocWorker.updated){
+        DocWorker.available = false;
+        DocWorker.worker.postMessage([
+            input.data.innerText,
+            DocWorker.delay
+        ]);    
+        DocWorker.updated = true;
+    }
+}
+DocWorker.make();
+
 const update_viewer = () => {
     let text = input.data.innerText;
-    let doc = Parser.eval_doc(text);
-    graph_vistor.node.data.title = doc.title;
-    graph_vistor.node.data.thumbnail = 
-        (doc.thumbnail.length > 0) ? doc.thumbnail : "?";
-
-    output.title.innerText = 
-        (doc.title.length > 0) ? doc.title : "Untitled Doc";
-    output.data.innerHTML = doc.data;
-
     input.syntax.innerHTML = Parser.highlight(text);    
-
 };
-const sync_viewer = () =>{
+const reload_document = () =>{
+    DocWorker.updated = false;
+    DocWorker.delay = 0;
     sync_data();
     update_viewer();       
 };
@@ -130,42 +157,54 @@ window.onkeyup = (event) => {
     }  
 };
 window.onkeydown = event => {
-    let C = true;
     switch(event.code){        
-        case "KeyS":
-            if(State.keyboard.shift){
+        case "ShiftLeft": State.keyboard.shift = true; break;
+        default: break;
+    }  
+    if(event.ctrlKey){
+        let block = true;
+        switch(event.code){
+            case "KeyY": toggle_view(); break;
+            case "KeyE": toggle_edit(); break;
+            case "KeyS":
                 XHR.request("POST", "$/data_save", 
                     graph_vistor.save()
-                ).then(() => { console.log("SAVED!"); })
+                ).then(() => { 
+                    graph_vistor.edited = false;
+                    window.title = "NoteForest [Saved]";
+                })
                 .catch(() => { 
                     alert("Saving not supported!"); 
                 });
-                State.saved = true;
-            }
-            break;
-        case "ShiftLeft": State.keyboard.shift = true; break;
-        default: C = false; break;
-    }  
-    State.change = C || State.change;
+                break;    
+            default:
+                block = false;
+        }
+        if(block){
+            event.preventDefault();
+        }
+    }
 };
 
-window.onclick = _ => {
+window.onclick = event => {
     State.change = true;
-
+   
     if(graph.contextmenu.classList.contains("view")){
         graph.contextmenu.className = "";
         graph.contextmenu.classList.add("hidden");    
     }
-    else if(document.activeElement == canvas){
+    if(event.ctrlKey){
         if(graph_vistor.goto_select()){
-            sync_viewer();
-        }
+            reload_document();
+        }    
     }
 }
 window.oncontextmenu = event => {
     State.change = true;
     event.preventDefault();
-    graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
+    if(!State.view){
+        graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
+    }
 }
 window.onmousemove = event => {
     State.change = true;
@@ -185,45 +224,52 @@ const toggle_view = () => {
     State.view = !State.view;
 };
 const action_rot = (n, lock) => { 
-    if(State.keyboard.shift  && State.edit){ 
+    if(lock  && State.edit){ 
         graph_vistor.swap_pointer(n); 
     }
     else{ 
         graph_vistor.move_pointer(n);
-        sync_viewer();
+        reload_document();
     }
 };
+
+canvas.display.oncontextmenu = _ => {
+    graph_vistor.contextmenu(State.mouse_state.pos, graph.contextmenu);
+}
 canvas.display.onkeydown = event => {
     let C = true;
+    let edit = event.ctrlKey && State.edit;
+
     switch(event.code){
-        case "KeyV": toggle_view(); break;
-        case "KeyE": toggle_edit(); break;
 
         case "ArrowLeft":   action_rot(-1); break;
         case "ArrowRight":  action_rot(+1); break;
 
         case "ArrowUp":     
-            if(State.keyboard.shift && State.edit){ 
+            if(edit){ 
                 graph_vistor.change_length(+1); 
+                event.preventDefault();
             }
             else{ 
                 graph_vistor.goto_child();
-                sync_viewer();
+                reload_document();
             }
             break;
         case "ArrowDown":   
-            if(State.keyboard.shift && State.edit){ 
-                graph_vistor.change_length(-1);
+            if(edit){ 
+                graph_vistor.change_length(-1); 
+                event.preventDefault();
             }
             else{ 
                 graph_vistor.goto_parent();
-                sync_viewer();
+                reload_document();
             }
             break;
         
         case "Equal": 
-            if(State.edit && State.keyboard.shift){ 
+            if(edit){
                 graph_vistor.add_child(); 
+                event.preventDefault();
             }
             else{ 
                 State.scale *= 1.025; 
@@ -231,8 +277,9 @@ canvas.display.onkeydown = event => {
             break;
             
         case "Minus": 
-            if(State.edit && State.keyboard.shift){ 
+            if(edit){ 
                 graph_vistor.remove_child(); 
+                event.preventDefault();
             }
             else{ 
                 State.scale /= 1.025; 
@@ -262,7 +309,7 @@ const main_loop = () => {
                 .draw(pos, State.scale * R * 0.08)
                 .touch(State.mouse_state)
             
-            if(document.activeElement === canvas){
+            if(!State.view){
                 graph_vistor
                     .draw_tooltip(graph.tooltip, graph.contextmenu);
             }
@@ -271,15 +318,24 @@ const main_loop = () => {
         State.change = false;
     }
 
+    if(graph_vistor.edited){
+        document.title = "NoteForest [Unsaved]";
+    }
+    else{
+        document.title = "NoteForest"
+    }
+
+    DocWorker.update_output();
     window.requestAnimationFrame(main_loop);
 }
 
 const init = () => {
     renderer = new Graph.Renderer(context.display, context.pointer);
     graph_vistor = new Graph.Vistor(node, renderer);
+    graph_vistor.edited = false;
 
-    sync_viewer();
     main_loop();    
+    reload_document();
 }
 
 XHR.request("GET", "$/data_load").then(

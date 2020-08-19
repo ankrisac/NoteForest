@@ -180,7 +180,7 @@ body{
 
 }
 #editor_data{
-    color: transparent;
+    color: transparent; 
     caret-color: white;
 
     min-height: 90%;

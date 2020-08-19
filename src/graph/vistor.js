@@ -3,10 +3,12 @@ import * as Node from "./node.js";
 class Vistor{
     constructor(node, renderer){
         this.load(node);
-        this.renderer = renderer
+        this.renderer = renderer;
+        this.edited = true;
     }
 
     save(){
+        this.edited = false;
         return this.node.get_root().json_encode();
     }
     load(node){
@@ -39,6 +41,7 @@ class Vistor{
         const N = links.length;
         if(N > 0){
             links[this.link].len = Util.clamp(links[this.link].len + len, 1, 10);
+            this.edited = false;
         }
     }
 
@@ -77,17 +80,21 @@ class Vistor{
         return false;
     }
     add_link(){
-        if(this.hov_node instanceof Node.Node){
-            return this.node.add_minor_link(this.hov_node);
+        if(this.hov_node instanceof Node.Node
+        && this.node.add_minor_link(this.hov_node)){
+            this.edited = true;
+            return true;    
         }
         return false;
     }
 
     add_child(){
+        this.edited = true;
         this.node.add_node(new Node.Node(new Node.Doc()));
         this.move_pointer(0);
     }
     remove_child(){
+        this.edited = true;
         this.node.remove_node(this.link);
         this.move_pointer(0);
     }
@@ -135,6 +142,7 @@ class Vistor{
 
     draw_tooltip(tooltip, contextmenu){
         tooltip.className = "";
+        tooltip.innerHTML = "";
         if(this.hov_node === null 
         || contextmenu.classList.contains("view")){
             tooltip.classList.add("hidden");
