@@ -74,7 +74,7 @@ const sync_data = () => {
 };
 
 if(!window.Worker){
-    alert("This applet requires the Web Workers API, Please use a modern browser such as Chrome or Firefox");
+    alert("This app requires the Web Workers API, Please use a modern browser such as Chrome or Firefox");
 }
 
 const DocWorker = {
@@ -338,6 +338,43 @@ const init = () => {
     reload_document();
 }
 
+const intro_page = `title: NoteForest
+
+p: A notetaking app with a graphical tree file manager, 
+   primarily intended for scientific documents
+p: Supports typesetting and LaTeX (using KaTeX), with syntax 
+   highlighting in the editor
+
+Example
+math_block:
+  \int_a^x f(t) \mathrm{d}t &= F(x) - F(a)
+  f(x) &= \frac{dF}{dx}
+
+p: It also has a custom diagram DSL, which can render circuits
+   
+diagram:
+  let:
+    Z = [2,2]
+    A = Z + [2;0.0]
+    B = Z + [2;0.2]
+    C = Z + [2;0.4]
+    D = Z + [2;0.6]
+    E = Z + [2;0.8]    
+    F = Z + [3;0.9]
+
+  circuit:
+    ac_source: A B
+    resistor: B C
+    inductor: C D
+    capacitor: D E
+    diode: E A
+    boxnode: D A
+  
+    animate:
+    AC:
+`;
+
+
 XHR.request("GET", "$/data_load").then(
     data => { 
         node = Graph.Node.json_decode(data);
@@ -346,7 +383,12 @@ XHR.request("GET", "$/data_load").then(
 ).catch(
     err => {
         console.log("Creating new graph!", err);
-        node = new Graph.Node();     
+
+        // Create default graph
+        node = new Graph.Node();
+        node.data.data = intro_page;
+        
+
         init();
     }
 );
