@@ -347,8 +347,8 @@ p: Supports typesetting and LaTeX (using KaTeX), with syntax
 
 Example
 math_block:
-  \int_a^x f(t) \mathrm{d}t &= F(x) - F(a)
-  f(x) &= \frac{dF}{dx}
+  \\int_a^x f(t) \\mathrm{d}t &= F(x) - F(a)
+  f(x) &= \\frac{dF}{dx}
 
 p: It also has a custom diagram DSL, which can render circuits
    
