@@ -4,8 +4,8 @@ A simple notetaking app organized with a interactive graph structure
 intended primarily for scientific documents
 
 ## Controls
-Ctrl-Y : Toggle viewer
-Ctrl-E : Toggle editor
+- Ctrl-Y : Toggle viewer
+- Ctrl-E : Toggle editor
 
 ## Features
 - typesetting DSL
