@@ -1,0 +1,64 @@
+<svg stroke="white" viewBox="0 0 2000 2000" width="100%" height="100%">
+    <style> 
+    .text { 
+        text-anchor: middle; 
+        dominant-baseline: central;
+
+        font: 66.66666666666667px sans-serif; 
+        font-family: 'Recursive', sans-serif;
+        font-weight: 100;
+
+        fill: white;
+    } 
+
+    .wire {
+        stroke: white;
+        stroke-dasharray: 50 10;
+
+        animation: flow 4s ease-in-out infinite alternate;
+    }
+    .inductor_wire {
+        stroke: #9999FF;
+        stroke-dasharray: 50 10;
+
+        animation: flow 4s ease-in-out infinite alternate;
+        animation-delay: 1s;
+    }
+    
+    .flow_forward { animation: flow_pos 4s ease-in-out infinite alternate; }
+    .flow_backward { animation: flow_neg 4s ease-in-out infinite alternate; }
+
+    @keyframes flow { 
+        to { stroke-dashoffset: -600; }
+    }
+    @keyframes flow_pos {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes flow_neg {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
+    </style>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M800,400 L697.071,541.67"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M626.536,638.752 L523.607,780.423"></path>
+  <path fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M601.803,590.211 A60,60 0 0 1 721.803,590.211 M721.803,590.211 A60,60 0 0 1 601.803,590.211"></path>
+  <path class="AC_source" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M701.803,590.211 A20,20 0 0 1 661.803,590.211"></path>
+  <path class="AC_source" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M621.803,590.211 A20,20 0 0 1 661.803,590.211"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M523.607,780.423 L395.106,738.67"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M204.894,676.867 L76.393,635.114"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M395.106,738.67 L395.106,738.67 L396.887,712.962 L369.548,756.652 L371.329,730.945 L371.329,730.945 L373.111,705.237 L345.772,748.927 L347.553,723.219 L347.553,723.219 L349.334,697.511 L321.995,741.202 L323.776,715.494 L323.776,715.494 L325.558,689.786 L298.219,733.476 L300,707.768 L300,707.768 L301.781,682.061 L274.442,725.751 L276.224,700.043 L276.224,700.043 L278.005,674.335 L250.666,718.025 L252.447,692.318 L252.447,692.318 L254.228,666.61 L226.889,710.3 L228.671,684.592 L228.671,684.592 L230.452,658.884 L203.113,702.574 L204.894,676.867"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M76.393,635.114 L76.393,164.886"></path>
+  <path class="inductor_wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M76.393,507.5 A20,35 -90.00000000000001 0 1 76.393,467.5 L76.393,467.5 A7.5,21 -90.00000000000001 0 1 76.393,482.5 L76.393,482.5 A20,35 -90.00000000000001 0 1 76.393,442.5 L76.393,442.5 A7.5,21 -90.00000000000001 0 1 76.393,457.5 L76.393,457.5 A20,35 -90.00000000000001 0 1 76.393,417.5 L76.393,417.5 A7.5,21 -90.00000000000001 0 1 76.393,432.5 L76.393,432.5 A20,35 -90.00000000000001 0 1 76.393,392.5 L76.393,392.5 A7.5,21 -90.00000000000001 0 1 76.393,407.5 L76.393,407.5 A20,35 -90.00000000000001 0 1 76.393,367.5 L76.393,367.5 A7.5,21 -90.00000000000001 0 1 76.393,382.5 L76.393,382.5 A20,35 -90.00000000000001 0 1 76.393,342.5 L76.393,342.5 A7.5,21 -90.00000000000001 0 1 76.393,357.5 L76.393,357.5 A20,35 -90.00000000000001 0 1 76.393,317.5 L76.393,317.5 A7.5,21 -90.00000000000001 0 1 76.393,332.5 L76.393,332.5 A20,35 -90.00000000000001 0 1 76.393,292.5"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M76.393,164.886 L280.979,98.412"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M319.021,86.051 L523.607,19.577"></path>
+  <path fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M232.779,13.077 A246.658,246.658 -18.00000000000001 0 1 292.143,195.781"></path>
+  <path fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M349.923,181.157 L288.119,-9.054"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M523.607,19.577 L632.414,169.338"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M691.193,250.24 L800,400"></path>
+  <path fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M591.963,198.727 L591.963,198.727 L672.865,139.949 L691.193,250.24 L731.644,220.85 L650.742,279.629 L691.193,250.24Z"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M76.393,164.886 L343.091,251.541"></path>
+  <path class="wire" fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M533.302,313.345 L800,400"></path>
+  <path fill="none" stroke-width="5" shape-rendering="geometricPrecision" d="M332.275,284.828 L332.275,284.828 L522.487,346.632 L544.118,280.058 L353.907,218.254Z"></path>
+</svg>
