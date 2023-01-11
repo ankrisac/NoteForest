@@ -2,9 +2,9 @@
 
 ![](https://github.com/ankrisac/NoteForest/blob/main/doc/example.png)
 
-## Controls
-Ctrl-Y : Toggle viewer
-Ctrl-E : Toggle editor
+## Shortcuts
+- Ctrl-Y : Toggle viewer
+- Ctrl-E : Toggle editor
 
 ## Features
 - typesetting DSL
