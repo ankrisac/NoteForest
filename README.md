@@ -1,11 +1,10 @@
 # NoteForest
 
-A simple notetaking app organized with a interactive graph structure
-intended primarily for scientific documents
+![](https://github.com/ankrisac/NoteForest/blob/main/doc/example.png)
 
 ## Controls
-- Ctrl-Y : Toggle viewer
-- Ctrl-E : Toggle editor
+Ctrl-Y : Toggle viewer
+Ctrl-E : Toggle editor
 
 ## Features
 - typesetting DSL
